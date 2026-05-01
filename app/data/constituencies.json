@@ -1,0 +1,29 @@
+[
+  { "id": 1, "name": "Varanasi", "state": "Uttar Pradesh", "type": "Lok Sabha", "representative": "Narendra Modi", "party": "BJP", "electionYear": 2024, "voters": 1900000 },
+  { "id": 2, "name": "Rae Bareli", "state": "Uttar Pradesh", "type": "Lok Sabha", "representative": "Rahul Gandhi", "party": "INC", "electionYear": 2024, "voters": 1820000 },
+  { "id": 3, "name": "New Delhi", "state": "Delhi", "type": "Lok Sabha", "representative": "Bansuri Swaraj", "party": "BJP", "electionYear": 2024, "voters": 1450000 },
+  { "id": 4, "name": "Hyderabad", "state": "Telangana", "type": "Lok Sabha", "representative": "Asaduddin Owaisi", "party": "AIMIM", "electionYear": 2024, "voters": 1680000 },
+  { "id": 5, "name": "Gandhinagar", "state": "Gujarat", "type": "Lok Sabha", "representative": "Amit Shah", "party": "BJP", "electionYear": 2024, "voters": 1720000 },
+  { "id": 6, "name": "Lucknow", "state": "Uttar Pradesh", "type": "Lok Sabha", "representative": "Rajnath Singh", "party": "BJP", "electionYear": 2024, "voters": 1950000 },
+  { "id": 7, "name": "Thiruvananthapuram", "state": "Kerala", "type": "Lok Sabha", "representative": "Shashi Tharoor", "party": "INC", "electionYear": 2024, "voters": 1380000 },
+  { "id": 8, "name": "Indore", "state": "Madhya Pradesh", "type": "Lok Sabha", "representative": "Lalwani Mohan Yadav", "party": "BJP", "electionYear": 2024, "voters": 2300000 },
+  { "id": 9, "name": "Mumbai North", "state": "Maharashtra", "type": "Lok Sabha", "representative": "Piyush Goyal", "party": "BJP", "electionYear": 2024, "voters": 1760000 },
+  { "id": 10, "name": "Chennai South", "state": "Tamil Nadu", "type": "Lok Sabha", "representative": "Thamizhachi Thangapandian", "party": "DMK", "electionYear": 2024, "voters": 1540000 },
+  { "id": 11, "name": "Kolkata Dakshin", "state": "West Bengal", "type": "Lok Sabha", "representative": "Mala Roy", "party": "TMC", "electionYear": 2024, "voters": 1620000 },
+  { "id": 12, "name": "Amritsar", "state": "Punjab", "type": "Lok Sabha", "representative": "Kuldeep Singh Dhaliwal", "party": "AAP", "electionYear": 2024, "voters": 1510000 },
+
+  { "id": 13, "name": "Karnal", "state": "Haryana", "type": "Vidhan Sabha", "representative": "Nayab Singh Saini", "party": "BJP", "electionYear": 2024, "voters": 310000 },
+  { "id": 14, "name": "Model Town", "state": "Delhi", "type": "Vidhan Sabha", "representative": "Akhilesh Pati Tripathi", "party": "AAP", "electionYear": 2025, "voters": 195000 },
+  { "id": 15, "name": "Gandhinagar South", "state": "Gujarat", "type": "Vidhan Sabha", "representative": "Alpesh Thakor", "party": "BJP", "electionYear": 2022, "voters": 270000 },
+  { "id": 16, "name": "Worli", "state": "Maharashtra", "type": "Vidhan Sabha", "representative": "Aaditya Thackeray", "party": "SHS (UBT)", "electionYear": 2024, "voters": 240000 },
+  { "id": 17, "name": "Amethi", "state": "Uttar Pradesh", "type": "Vidhan Sabha", "representative": "Sanjay Singh Chauhan", "party": "BJP", "electionYear": 2022, "voters": 350000 },
+  { "id": 18, "name": "Nandigram", "state": "West Bengal", "type": "Vidhan Sabha", "representative": "Suvendu Adhikari", "party": "BJP", "electionYear": 2021, "voters": 280000 },
+  { "id": 19, "name": "Madurai West", "state": "Tamil Nadu", "type": "Vidhan Sabha", "representative": "P.T.R. Palanivel Thiagarajan", "party": "DMK", "electionYear": 2021, "voters": 230000 },
+  { "id": 20, "name": "Patiala", "state": "Punjab", "type": "Vidhan Sabha", "representative": "Ajitpal Singh Kohli", "party": "AAP", "electionYear": 2022, "voters": 295000 },
+
+  { "id": 21, "name": "Ralegan Siddhi", "state": "Maharashtra", "type": "Panchayat", "representative": "Gram Panchayat", "party": "Independent", "electionYear": 2023, "voters": 2500 },
+  { "id": 22, "name": "Punsari", "state": "Gujarat", "type": "Panchayat", "representative": "Himanshu Patel (Sarpanch)", "party": "Independent", "electionYear": 2022, "voters": 6800 },
+  { "id": 23, "name": "Hiware Bazar", "state": "Maharashtra", "type": "Panchayat", "representative": "Popatrao Pawar (Sarpanch)", "party": "Independent", "electionYear": 2023, "voters": 1200 },
+  { "id": 24, "name": "Mawlynnong", "state": "Meghalaya", "type": "Panchayat", "representative": "Dorbar Shnong Council", "party": "Traditional", "electionYear": 2023, "voters": 500 },
+  { "id": 25, "name": "Dharnai", "state": "Bihar", "type": "Panchayat", "representative": "Gram Panchayat", "party": "Independent", "electionYear": 2022, "voters": 2200 }
+]
