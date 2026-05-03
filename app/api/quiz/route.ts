@@ -1,5 +1,5 @@
 import { google } from "@ai-sdk/google";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 
 export async function POST(req: Request) {
@@ -16,14 +16,14 @@ export async function POST(req: Request) {
     confidence: z.number().min(0).max(100),
   });
 
-  const result = await generateObject({
+  const result = await generateText({
     model: google("gemini-3.1-pro-latest"),
-    schema,
+    output: Output.object({ schema }),
     system: `You are FactGuard, an expert fact-checker for Indian elections.
 Return factual, simple explanations.`,
     prompt: `Claim: "${claim}"`,
     temperature: 0.3,
   });
 
-  return Response.json(result.object);
+  return Response.json(result.output);
 }

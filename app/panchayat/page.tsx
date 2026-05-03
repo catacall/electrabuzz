@@ -1,8 +1,12 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { TreePine, Users, Vote, Layers, ChevronDown, ChevronUp, HelpCircle, CheckCircle, XCircle, ArrowDown } from "lucide-react";
 import constituenciesData from "../data/constituencies.json";
+import { fireConfetti } from "@/app/utils/confetti";
+import { playCorrectSound, playIncorrectSound } from "@/app/utils/sound";
+import { useGlobalScore } from "@/app/hooks/useGlobalScore";
+
 
 const panchayatFacts = [
   { label: "Gram Panchayats", value: "2.5 Lakh+", icon: TreePine },
@@ -86,6 +90,7 @@ const quizQuestions = [
 ];
 
 export default function PanchayatPage() {
+  const { addPoints } = useGlobalScore();
   const [openSection, setOpenSection] = useState<number | null>(0);
   const [quizState, setQuizState] = useState({ current: 0, score: 0, answered: false, selected: null as number | null });
 
@@ -93,9 +98,19 @@ export default function PanchayatPage() {
 
   const handleAnswer = (idx: number) => {
     if (quizState.answered) return;
+    const isCorrect = idx === quizQuestions[quizState.current].correct;
+    
+    if (isCorrect) {
+      fireConfetti();
+      playCorrectSound();
+      addPoints(10);
+    } else {
+      playIncorrectSound();
+    }
+
     setQuizState(prev => ({
       ...prev, answered: true, selected: idx,
-      score: idx === quizQuestions[prev.current].correct ? prev.score + 1 : prev.score,
+      score: isCorrect ? prev.score + 1 : prev.score,
     }));
   };
 
@@ -110,7 +125,7 @@ export default function PanchayatPage() {
           <span className="text-sm font-bold t-accent uppercase tracking-wider">Rural Self-Governance</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold t-text tracking-tight">Panchayati Raj</h1>
-        <p className="t-muted mt-3 max-w-xl mx-auto">India&apos;s three-tier system of grassroots democracy â€” empowering over 6 lakh villages with self-governance since 1992.</p>
+        <p className="t-muted mt-3 max-w-xl mx-auto">India&apos;s three-tier system of grassroots democracy  empowering over 6 lakh villages with self-governance since 1992.</p>
       </div>
 
       {/* Stats Grid */}
@@ -211,7 +226,7 @@ export default function PanchayatPage() {
                 const isSelected = quizState.selected === idx;
                 let cls = "t-bg3 border t-border t-text2 hover:t-card";
                 if (quizState.answered) {
-                  if (isCorrect) cls = "bg-emerald-500/20 border-emerald-500/50 text-emerald-200";
+                  if (isCorrect) cls = "bg-green-500 scale-110 shadow-lg text-white border-green-500";
                   else if (isSelected) cls = "bg-red-500/20 border-red-500/50 text-red-200";
                 }
                 return (
@@ -226,7 +241,7 @@ export default function PanchayatPage() {
             </div>
             {quizState.answered && quizState.current < quizQuestions.length - 1 && (
               <button onClick={nextQuestion} className="mt-5 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-400 transition-colors font-medium shadow-sm">
-                Next Question â†’
+                Next Question 
               </button>
             )}
           </div>

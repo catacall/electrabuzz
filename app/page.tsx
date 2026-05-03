@@ -11,13 +11,13 @@ export default function Home() {
           Explore and learn about the Indian election systems interactively.
         </p>
         <nav className="flex flex-col sm:flex-row w-full gap-3 sm:gap-4 justify-center">
-          <MotionLink href="/lok-sabha" className="flex-1 text-center t-bg3 hover:t-card t-accent border t-border hover:border-blue-400 py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-medium transition-all t-shadow">
+          <MotionLink href="/lok-sabha" className="flex-1 text-center t-bg3 hover:t-card t-accent border t-border hover:border-orange-400 py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-medium transition-all t-shadow">
             Lok Sabha
           </MotionLink>
-          <MotionLink href="/vidhan-sabha" className="flex-1 text-center t-bg3 hover:t-card t-accent border t-border hover:border-blue-400 py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-medium transition-all t-shadow">
+          <MotionLink href="/vidhan-sabha" className="flex-1 text-center t-bg3 hover:t-card t-accent border t-border hover:border-white py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-medium transition-all t-shadow">
             Vidhan Sabha
           </MotionLink>
-          <MotionLink href="/panchayat" className="flex-1 text-center t-bg3 hover:t-card t-accent border t-border hover:border-blue-400 py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-medium transition-all t-shadow">
+          <MotionLink href="/panchayat" className="flex-1 text-center t-bg3 hover:t-card t-accent border t-border hover:border-green-400 py-3 sm:py-4 px-4 sm:px-6 rounded-xl font-medium transition-all t-shadow">
             Panchayat
           </MotionLink>
         </nav>

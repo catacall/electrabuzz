@@ -17,9 +17,9 @@ export default function Navbar() {
   const { isSignedIn, isLoaded } = useUser();
 
   const navLinks = [
-    { href: "/ai", label: "AI Assistant", icon: Bot },
+    { href: "/ai", label: "Electra", icon: Bot },
     { href: "/explore", label: "Explore", icon: Map },
-    { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
+    { href: "/quiz", label: "Quiz", icon: Trophy },
   ];
 
   return (

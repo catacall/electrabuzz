@@ -33,7 +33,7 @@ export default function ExplorePage() {
         Election Explorer
       </h1>
       <p className="t-muted mb-8 text-center max-w-lg px-4">
-        Search across {constituenciesData.length} constituencies â€” Lok Sabha, Vidhan Sabha, and Panchayat.
+        Search across {constituenciesData.length} constituencies  Lok Sabha, Vidhan Sabha, and Panchayat.
       </p>
 
       {/* Search */}

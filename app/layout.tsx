@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="t-bg t-text min-h-screen selection:bg-blue-500/30 transition-colors duration-300 antialiased">
+      <body className="t-bg t-text min-h-screen transition-colors duration-300 antialiased">
         <ThemeProvider>
           <ClerkProvider>
             <Navbar />
@@ -35,4 +35,3 @@ export default function RootLayout({
     </html>
   );
 }
-

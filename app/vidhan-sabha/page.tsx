@@ -1,8 +1,12 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { Landmark, Users, CalendarDays, ChevronDown, ChevronUp, HelpCircle, CheckCircle, XCircle, MapPin } from "lucide-react";
 import constituenciesData from "../data/constituencies.json";
+import { fireConfetti } from "@/app/utils/confetti";
+import { playCorrectSound, playIncorrectSound } from "@/app/utils/sound";
+import { useGlobalScore } from "@/app/hooks/useGlobalScore";
+
 
 const vidhanSabhaFacts = [
   { label: "Total States & UTs", value: "28 + 8", icon: Landmark },
@@ -64,6 +68,7 @@ const quizQuestions = [
 ];
 
 export default function VidhanSabhaPage() {
+  const { addPoints } = useGlobalScore();
   const [openSection, setOpenSection] = useState<number | null>(0);
   const [activeTab, setActiveTab] = useState<"info" | "states" | "quiz">("info");
   const [quizState, setQuizState] = useState({ current: 0, score: 0, answered: false, selected: null as number | null });
@@ -72,9 +77,19 @@ export default function VidhanSabhaPage() {
 
   const handleAnswer = (idx: number) => {
     if (quizState.answered) return;
+    const isCorrect = idx === quizQuestions[quizState.current].correct;
+    
+    if (isCorrect) {
+      fireConfetti();
+      playCorrectSound();
+      addPoints(10);
+    } else {
+      playIncorrectSound();
+    }
+
     setQuizState(prev => ({
       ...prev, answered: true, selected: idx,
-      score: idx === quizQuestions[prev.current].correct ? prev.score + 1 : prev.score,
+      score: isCorrect ? prev.score + 1 : prev.score,
     }));
   };
 
@@ -189,7 +204,7 @@ export default function VidhanSabhaPage() {
                   const isSelected = quizState.selected === idx;
                   let cls = "t-bg3 border t-border t-text2 hover:t-card";
                   if (quizState.answered) {
-                    if (isCorrect) cls = "bg-emerald-500/20 border-emerald-500/50 text-emerald-200";
+                    if (isCorrect) cls = "bg-green-500 scale-110 shadow-lg text-white border-green-500";
                     else if (isSelected) cls = "bg-red-500/20 border-red-500/50 text-red-200";
                   }
                   return (
