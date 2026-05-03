@@ -2,14 +2,19 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { LogIn, LogOut, Trophy, Map, Home, Bot, Sun, Moon, Menu, X } from "lucide-react";
+import { Trophy, Map, Home, Bot, Sun, Moon, Menu, X, LogIn, UserPlus } from "lucide-react";
+import {
+  SignInButton,
+  SignUpButton,
+  UserButton,
+  useUser,
+} from "@clerk/nextjs";
 
 export default function Navbar() {
-  const { user, signIn, signOut, userScore } = useAuth();
   const { theme, toggleTheme, mounted } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isSignedIn, isLoaded } = useUser();
 
   const navLinks = [
     { href: "/ai", label: "AI Assistant", icon: Bot },
@@ -27,7 +32,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-5">
+        <div className="hidden md:flex items-center gap-4">
           {navLinks.map(link => (
             <Link key={link.href} href={link.href} className="flex items-center gap-2 t-text2 hover:t-accent transition-colors group text-sm font-medium">
               <link.icon className="w-4 h-4 t-accent group-hover:scale-110 transition-transform" />
@@ -35,33 +40,50 @@ export default function Navbar() {
             </Link>
           ))}
 
+          {/* Divider */}
+          <div className="w-px h-6 bg-(--border)" />
+
           {/* Theme Toggle */}
           <button onClick={toggleTheme} className="p-2 rounded-full t-card t-border border hover:t-border-hover transition-all" title="Toggle theme" aria-label="Toggle theme">
             {!mounted ? <Sun className="w-4 h-4 text-amber-400" /> : theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 t-accent" />}
           </button>
 
-          {/* Auth */}
-          {user ? (
-            <div className="flex items-center gap-2 t-card border t-border px-3 py-1.5 rounded-full t-shadow">
-              <span className="text-sm font-medium t-text">{user.displayName?.split(" ")[0]}</span>
-              <span className="text-xs t-accent-bg t-accent font-bold px-2 py-0.5 rounded-full">{userScore} pts</span>
-              <button onClick={signOut} className="p-1 t-muted hover:text-red-400 rounded-full transition-all" title="Sign Out">
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <button onClick={signIn} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-600 transition-all shadow-sm">
-              <LogIn className="w-4 h-4" />
-              Sign In
-            </button>
+          {/* Auth Buttons */}
+          {isLoaded && (
+            <>
+              {isSignedIn ? (
+                <UserButton />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <SignInButton mode="modal">
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg t-text2 hover:t-text t-border border hover:t-border-hover transition-all cursor-pointer">
+                      <LogIn className="w-3.5 h-3.5" />
+                      Sign In
+                    </button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-(--accent) text-white hover:bg-(--accent-hover) transition-all cursor-pointer">
+                      <UserPlus className="w-3.5 h-3.5" />
+                      Sign Up
+                    </button>
+                  </SignUpButton>
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        {/* Mobile: theme + hamburger */}
+        {/* Mobile: theme + auth + hamburger */}
         <div className="flex md:hidden items-center gap-2">
           <button onClick={toggleTheme} className="p-2 rounded-full t-card t-border border transition-all" aria-label="Toggle theme">
             {!mounted ? <Sun className="w-4 h-4 text-amber-400" /> : theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 t-accent" />}
           </button>
+
+          {/* Mobile Auth */}
+          {isLoaded && isSignedIn && (
+            <UserButton />
+          )}
+
           <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-lg t-text2 hover:t-text transition-colors" aria-label="Menu">
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -78,23 +100,24 @@ export default function Navbar() {
               <span className="font-medium">{link.label}</span>
             </Link>
           ))}
-          <div className="pt-2 border-t t-border">
-            {user ? (
-              <div className="flex items-center justify-between p-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium t-text">{user.displayName}</span>
-                  <span className="text-xs t-accent font-bold">{userScore} pts</span>
-                </div>
-                <button onClick={() => { signOut(); setMobileOpen(false); }} className="text-sm text-red-400 font-medium">Sign Out</button>
-              </div>
-            ) : (
-              <button onClick={() => { signIn(); setMobileOpen(false); }}
-                className="w-full flex items-center justify-center gap-2 bg-blue-500 text-white p-3 rounded-xl font-medium">
-                <LogIn className="w-5 h-5" />
-                Sign In with Google
-              </button>
-            )}
-          </div>
+
+          {/* Mobile Sign In / Sign Up (only when signed out) */}
+          {isLoaded && !isSignedIn && (
+            <div className="pt-2 border-t t-border flex flex-col gap-2">
+              <SignInButton mode="modal">
+                <button className="flex items-center justify-center gap-2 w-full p-3 rounded-xl text-sm font-medium t-text2 t-border border hover:t-card transition-all cursor-pointer">
+                  <LogIn className="w-4 h-4" />
+                  Sign In
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="flex items-center justify-center gap-2 w-full p-3 rounded-xl text-sm font-medium bg-(--accent) text-white hover:bg-(--accent-hover) transition-all cursor-pointer">
+                  <UserPlus className="w-4 h-4" />
+                  Sign Up
+                </button>
+              </SignUpButton>
+            </div>
+          )}
         </div>
       )}
     </nav>

@@ -2,22 +2,6 @@
 
 /* ===== THEME VARIABLES ===== */
 :root {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border: #334155;
-  --border-hover: #475569;
-  --accent: #3b82f6;
-  --accent-hover: #60a5fa;
-  --accent-bg: rgba(59, 130, 246, 0.15);
-  --card-hover: #334155;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-.light {
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f1f5f9;
@@ -31,6 +15,22 @@
   --accent-bg: rgba(37, 99, 235, 0.1);
   --card-hover: #f1f5f9;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #334155;
+  --border-hover: #475569;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --accent-bg: rgba(59, 130, 246, 0.15);
+  --card-hover: #334155;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* ===== BASE ===== */

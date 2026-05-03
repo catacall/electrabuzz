@@ -10,10 +10,10 @@ interface ThemeContextType {
   mounted: boolean;
 }
 
-const ThemeContext = createContext<ThemeContextType>({ theme: "dark", toggleTheme: () => {}, mounted: false });
+const ThemeContext = createContext<ThemeContextType>({ theme: "light", toggleTheme: () => {}, mounted: false });
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   // Read stored theme after mount

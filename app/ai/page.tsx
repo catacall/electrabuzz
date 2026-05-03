@@ -48,6 +48,14 @@ export default function AIPage() {
         body: JSON.stringify({ query, mode }),
       });
       const data = await res.json();
+
+      if (!res.ok) {
+        console.error("API error:", data);
+        setResponse({ type: "error", data: { explanation: data.details || data.error || "Something went wrong. Please try again." } });
+        setStreamText(data.details || data.error || "Something went wrong. Please try again.");
+        return;
+      }
+
       setResponse(data);
 
       // Simulate typing effect for the explanation
@@ -61,6 +69,8 @@ export default function AIPage() {
       }, 10);
     } catch (error) {
       console.error("Failed to fetch AI response", error);
+      setResponse({ type: "error", data: { explanation: "Network error. Please check your connection and try again." } });
+      setStreamText("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -246,6 +256,20 @@ export default function AIPage() {
                 </div>
               )}
             </>
+          )}
+
+          {response.type === "error" && (
+            <div className="t-card border border-red-500/30 bg-red-500/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 t-shadow transition-colors">
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <ShieldAlert className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" />
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">Error</h3>
+                </div>
+              </div>
+              <div className="leading-relaxed text-sm sm:text-base whitespace-pre-wrap text-red-600 dark:text-red-400">
+                {streamText || response.data?.explanation || "An unexpected error occurred."}
+              </div>
+            </div>
           )}
         </div>
       )}
