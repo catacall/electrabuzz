@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { fireConfetti } from "@/app/utils/confetti";
 import { playCorrectSound, playIncorrectSound } from "@/app/utils/sound";
+import type { AIResponse } from "@/app/types";
+import ErrorFallback from "@/app/components/ui/ErrorFallback";
 
 const beginnerSuggestions = [
   { label: "What is Lok Sabha?", mode: "explain" as const },
@@ -30,8 +32,7 @@ export default function AIPage() {
   const [mode, setMode] = useState<"fact-check" | "explain">("explain");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<AIResponse | null>(null);
   const [quizAnswered, setQuizAnswered] = useState(false);
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [streamText, setStreamText] = useState("");
@@ -80,10 +81,13 @@ export default function AIPage() {
         return;
       }
 
-      setResponse(data);
+      setResponse(data as AIResponse);
 
       // Simulate typing effect for the explanation
-      const text = data.data?.explanation || "";
+      const text =
+        data.type === "fact-check"
+          ? data.data?.explanation || ""
+          : data.data?.explanation || "";
       let i = 0;
       setStreamText("");
       const interval = setInterval(() => {
@@ -114,11 +118,11 @@ export default function AIPage() {
   };
 
   const handleQuizAnswer = (index: number) => {
-    if (quizAnswered) return;
+    if (quizAnswered || response?.type !== "explain") return;
     setSelectedOption(index);
     setQuizAnswered(true);
     const isCorrect = index === response.data.quiz.correctAnswer;
-    
+
     if (isCorrect) {
       fireConfetti();
       playCorrectSound();
@@ -128,11 +132,19 @@ export default function AIPage() {
     }
   };
 
+  const handleRetry = () => {
+    setResponse(null);
+    setStreamText("");
+  };
+
   return (
     <div className="flex flex-col items-center p-4 sm:p-8 w-full max-w-4xl mx-auto min-h-[80vh] pb-20">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 t-card border t-border p-4 rounded-2xl sm:rounded-3xl t-shadow transition-colors">
-        <div className="t-accent-bg p-2.5 sm:p-3 rounded-xl sm:rounded-2xl">
+        <div
+          className="t-accent-bg p-2.5 sm:p-3 rounded-xl sm:rounded-2xl"
+          aria-hidden="true"
+        >
           <Bot className="w-8 h-8 sm:w-10 sm:h-10 t-accent" />
         </div>
         <div>
@@ -151,10 +163,17 @@ export default function AIPage() {
       </p>
 
       {/* Mode Toggle */}
-      <div className="flex t-card border t-border p-1 sm:p-1.5 rounded-full mb-6 w-full max-w-md t-shadow transition-colors">
+      <div
+        className="flex t-card border t-border p-1 sm:p-1.5 rounded-full mb-6 w-full max-w-md t-shadow transition-colors"
+        role="tablist"
+        aria-label="AI mode selection"
+      >
         <button
           onClick={() => setMode("explain")}
-          className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all ${
+          role="tab"
+          aria-selected={mode === "explain"}
+          aria-label="Explain mode"
+          className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
             mode === "explain"
               ? "t-bg3 t-accent t-shadow border t-border"
               : "t-text2 hover:t-text"
@@ -165,7 +184,10 @@ export default function AIPage() {
         </button>
         <button
           onClick={() => setMode("fact-check")}
-          className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all ${
+          role="tab"
+          aria-selected={mode === "fact-check"}
+          aria-label="Fact check mode"
+          className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
             mode === "fact-check"
               ? "t-bg3 t-accent t-shadow border t-border"
               : "t-text2 hover:t-text"
@@ -185,12 +207,14 @@ export default function AIPage() {
               Try asking
             </span>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2" role="list" aria-label="Suggested questions">
             {beginnerSuggestions.map((s, i) => (
               <button
                 key={i}
                 onClick={() => handleSuggestion(s)}
-                className="t-card border t-border px-3 py-2 rounded-full text-xs sm:text-sm t-text2 hover:t-accent hover:t-border-hover transition-all"
+                role="listitem"
+                aria-label={`Ask: ${s.label}`}
+                className="t-card border t-border px-3 py-2 rounded-full text-xs sm:text-sm t-text2 hover:t-accent hover:t-border-hover transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 {s.label}
               </button>
@@ -203,6 +227,7 @@ export default function AIPage() {
       <form
         onSubmit={handleSubmit}
         className="w-full max-w-2xl relative mb-8 group"
+        aria-label="Ask a question"
       >
         <input
           type="text"
@@ -213,13 +238,15 @@ export default function AIPage() {
               : "e.g., Is voting mandatory in India?"
           }
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           disabled={loading}
+          aria-label="Enter your question"
         />
         <button
           type="submit"
           disabled={loading || !query.trim()}
-          className="absolute right-2 sm:right-3 top-2 sm:top-3 bottom-2 sm:bottom-3 p-2.5 sm:p-3 bg-blue-500 text-white rounded-lg sm:rounded-xl hover:bg-blue-400 disabled:opacity-50 transition-colors flex items-center justify-center shadow-sm active:scale-95"
+          aria-label={loading ? "Loading" : "Submit question"}
+          className="absolute right-2 sm:right-3 top-2 sm:top-3 bottom-2 sm:bottom-3 p-2.5 sm:p-3 bg-blue-500 text-white rounded-lg sm:rounded-xl hover:bg-blue-400 disabled:opacity-50 transition-colors flex items-center justify-center shadow-sm active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
           {loading ? (
             <Loader2 className="w-5 h-5 animate-spin" />
@@ -231,7 +258,11 @@ export default function AIPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="w-full max-w-3xl t-card border t-border rounded-2xl sm:rounded-3xl p-6 sm:p-8 t-shadow flex items-center gap-4">
+        <div
+          className="w-full max-w-3xl t-card border t-border rounded-2xl sm:rounded-3xl p-6 sm:p-8 t-shadow flex items-center gap-4"
+          role="status"
+          aria-label="AI is thinking"
+        >
           <div className="t-accent-bg p-2 rounded-xl">
             <Bot className="w-6 h-6 t-accent animate-pulse" />
           </div>
@@ -300,53 +331,64 @@ export default function AIPage() {
                     {response.data.quiz.question}
                   </p>
 
-                  <div className="space-y-2 sm:space-y-3">
-                    {response.data.quiz.options.map(
-                      (opt: string, idx: number) => {
-                        const isCorrect =
-                          idx === response.data.quiz.correctAnswer;
-                        const isSelected = selectedOption === idx;
-                        let cls = "t-bg3 border t-border t-text2 hover:t-card";
-                        if (quizAnswered) {
-                          if (isCorrect)
-                            cls =
-                              "bg-green-500 scale-110 shadow-lg text-white border-green-500";
-                          else if (isSelected)
-                            cls =
-                              "bg-red-500/15 border-red-500/50 text-red-600 dark:text-red-300";
-                        }
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => handleQuizAnswer(idx)}
-                            disabled={quizAnswered}
-                            className={`w-full text-left p-3 sm:p-4 rounded-lg sm:rounded-xl border transition-all text-sm sm:text-base ${cls} ${!quizAnswered ? "hover:scale-[1.01]" : ""}`}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <span>{opt}</span>
-                              {quizAnswered && isCorrect && (
-                                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 shrink" />
-                              )}
-                            </div>
-                          </button>
-                        );
-                      },
-                    )}
-                  </div>
+                  {response.data.quiz.options &&
+                  response.data.quiz.options.length > 0 ? (
+                    <div className="space-y-2 sm:space-y-3" role="radiogroup" aria-label="Quiz options">
+                      {response.data.quiz.options.map(
+                        (opt: string, idx: number) => {
+                          const isCorrect =
+                            idx === response.data.quiz.correctAnswer;
+                          const isSelected = selectedOption === idx;
+                          let cls =
+                            "t-bg3 border t-border t-text2 hover:t-card";
+                          if (quizAnswered) {
+                            if (isCorrect)
+                              cls =
+                                "bg-emerald-500 text-white border-emerald-500 shadow-lg shadow-emerald-500/25 scale-[1.02]";
+                            else if (isSelected)
+                              cls =
+                                "bg-red-500/15 border-red-500/50 text-red-600 dark:text-red-300 shake-animation";
+                          }
+                          return (
+                            <button
+                              key={idx}
+                              onClick={() => handleQuizAnswer(idx)}
+                              disabled={quizAnswered}
+                              aria-label={`Option ${idx + 1}: ${opt}`}
+                              aria-pressed={isSelected}
+                              className={`w-full text-left p-3 sm:p-4 rounded-lg sm:rounded-xl border transition-all duration-300 text-sm sm:text-base ${cls} ${!quizAnswered ? "hover:scale-[1.01]" : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span>{opt}</span>
+                                {quizAnswered && isCorrect && (
+                                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white animate-bounce-in shrink-0" />
+                                )}
+                              </div>
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
+                  ) : (
+                    <p className="t-muted text-sm py-4">
+                      No quiz options available.
+                    </p>
+                  )}
 
                   {quizAnswered && (
                     <div
-                      className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg sm:rounded-xl font-medium text-center text-sm sm:text-base border ${
+                      className={`mt-4 sm:mt-6 p-3 sm:p-4 rounded-lg sm:rounded-xl font-medium text-center text-sm sm:text-base border transition-all duration-300 ${
                         selectedOption === response.data.quiz.correctAnswer
                           ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-500/30"
                           : "bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30"
                       }`}
+                      role="alert"
                     >
                       {selectedOption === response.data.quiz.correctAnswer
                         ? user
-                          ? "Correct! +10 points added."
-                          : "Correct! Sign in to save your score."
-                        : "Not quite — try another question!"}
+                          ? "✅ Correct! +10 points added."
+                          : "✅ Correct! Sign in to save your score."
+                        : `❌ Not quite — the answer was: ${response.data.quiz.options[response.data.quiz.correctAnswer]}`}
                     </div>
                   )}
                 </div>
@@ -355,21 +397,15 @@ export default function AIPage() {
           )}
 
           {response.type === "error" && (
-            <div className="t-card border border-red-500/30 bg-red-500/10 rounded-2xl sm:rounded-3xl p-5 sm:p-8 t-shadow transition-colors">
-              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <ShieldAlert className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" />
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-red-600 dark:text-red-400">
-                    Error
-                  </h3>
-                </div>
-              </div>
-              <div className="leading-relaxed text-sm sm:text-base whitespace-pre-wrap text-red-600 dark:text-red-400">
-                {streamText ||
-                  response.data?.explanation ||
-                  "An unexpected error occurred."}
-              </div>
-            </div>
+            <ErrorFallback
+              title="AI Error"
+              message={
+                streamText ||
+                response.data?.explanation ||
+                "An unexpected error occurred."
+              }
+              onRetry={handleRetry}
+            />
           )}
         </div>
       )}

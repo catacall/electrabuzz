@@ -23,7 +23,7 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className="w-full t-bg2 t-border border-b sticky top-0 z-50 t-shadow transition-colors duration-300">
+    <nav className="w-full t-bg2 t-border border-b sticky top-0 z-50 t-shadow transition-colors duration-300" role="navigation" aria-label="Main navigation">
       <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3 sm:py-4">
         {/* Logo */}
         <Link href="/" className="text-xl sm:text-2xl font-bold tracking-tight t-text hover:t-accent transition-colors flex items-center gap-2 group">
@@ -32,10 +32,10 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4" role="menubar">
           {navLinks.map(link => (
-            <Link key={link.href} href={link.href} className="flex items-center gap-2 t-text2 hover:t-accent transition-colors group text-sm font-medium">
-              <link.icon className="w-4 h-4 t-accent group-hover:scale-110 transition-transform" />
+            <Link key={link.href} href={link.href} className="flex items-center gap-2 t-text2 hover:t-accent transition-colors group text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg px-2 py-1" role="menuitem" aria-label={`Navigate to ${link.label}`}>
+              <link.icon className="w-4 h-4 t-accent group-hover:scale-110 transition-transform" aria-hidden="true" />
               <span>{link.label}</span>
             </Link>
           ))}

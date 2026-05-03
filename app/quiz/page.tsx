@@ -3,20 +3,14 @@
 import { useEffect, useState } from "react";
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import { Trophy, Medal, Award, CheckCircle, XCircle } from "lucide-react";
+import { Trophy, Medal, Award } from "lucide-react";
 import Image from "next/image";
-import { fireConfetti } from "@/app/utils/confetti";
-import { playCorrectSound, playIncorrectSound } from "@/app/utils/sound";
-import { useGlobalScore } from "@/app/hooks/useGlobalScore";
+import { useQuiz } from "@/app/hooks/useQuiz";
+import QuizCard from "@/app/components/ui/QuizCard";
+import LoadingSpinner from "@/app/components/ui/LoadingSpinner";
+import type { Question, LeaderboardUser } from "@/app/types";
 
-interface LeaderboardUser {
-  id: string;
-  displayName: string;
-  photoURL: string;
-  score: number;
-}
-
-const allQuizQuestions = [
+const allQuizQuestions: Question[] = [
   // Lok Sabha
   {
     question: "How many seats are there in the Lok Sabha?",
@@ -108,22 +102,20 @@ const allQuizQuestions = [
 ];
 
 export default function QuizAndLeaderboardPage() {
-  const { addPoints } = useGlobalScore();
+  const {
+    quizState,
+    currentQuestion,
+    isComplete,
+    handleAnswer,
+    nextQuestion,
+    resetQuiz,
+    totalQuestions,
+  } = useQuiz({ questions: allQuizQuestions, shuffle: true });
+
   const [leaders, setLeaders] = useState<LeaderboardUser[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const [quizQuestions, setQuizQuestions] = useState(allQuizQuestions);
-  const [quizState, setQuizState] = useState<{
-    current: number;
-    score: number;
-    answered: boolean;
-    selected: number | null;
-  }>({ current: 0, score: 0, answered: false, selected: null });
 
   useEffect(() => {
-    // Shuffle questions on mount
-    setQuizQuestions([...allQuizQuestions].sort(() => Math.random() - 0.5));
-
     async function fetchLeaderboard() {
       if (!db) {
         setLoading(false);
@@ -147,42 +139,13 @@ export default function QuizAndLeaderboardPage() {
     fetchLeaderboard();
   }, [quizState.current]); // re-fetch leaderboard occasionally, like when advancing questions
 
-  const handleAnswer = (idx: number) => {
-    if (quizState.answered) return;
-    const isCorrect = idx === quizQuestions[quizState.current].correct;
-
-    if (isCorrect) {
-      fireConfetti();
-      playCorrectSound();
-      addPoints(10);
-    } else {
-      playIncorrectSound();
-    }
-
-    setQuizState(prev => ({
-      ...prev,
-      answered: true,
-      selected: idx,
-      score: isCorrect ? prev.score + 1 : prev.score,
-    }));
-  };
-
-  const nextQuestion = () => {
-    setQuizState(prev => ({
-      ...prev,
-      current: prev.current + 1,
-      answered: false,
-      selected: null,
-    }));
-  };
-
   return (
     <div className="flex flex-col items-center p-4 sm:p-8 w-full max-w-3xl mx-auto space-y-12">
       
       {/* Quiz Section */}
       <div className="w-full">
         <div className="flex items-center justify-center gap-4 mb-8 t-card p-4 rounded-3xl border t-border shadow-sm">
-          <Trophy className="w-10 h-10 t-accent" />
+          <Trophy className="w-10 h-10 t-accent" aria-hidden="true" />
           <h1 className="text-3xl sm:text-4xl font-extrabold t-text tracking-tight">
             Ultimate Election Quiz
           </h1>
@@ -191,58 +154,23 @@ export default function QuizAndLeaderboardPage() {
           Test your knowledge across Lok Sabha, Vidhan Sabha, and Panchayati Raj. Each correct answer boosts your rank on the leaderboard!
         </p>
 
-        <div className="t-card border t-border rounded-3xl p-6 sm:p-8 shadow-sm">
-          {quizState.current < quizQuestions.length ? (
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-sm t-muted">Question {quizState.current + 1} of {quizQuestions.length}</span>
-                <span className="text-sm font-bold t-accent">Score: {quizState.score}/{quizQuestions.length}</span>
-              </div>
-              <p className="text-lg font-semibold t-text mb-5">{quizQuestions[quizState.current].question}</p>
-              <div className="grid gap-3">
-                {quizQuestions[quizState.current].options.map((opt, idx) => {
-                  const isCorrect = idx === quizQuestions[quizState.current].correct;
-                  const isSelected = quizState.selected === idx;
-                  let cls = "t-bg3 border t-border t-text2 hover:t-card";
-                  if (quizState.answered) {
-                    if (isCorrect) cls = "bg-green-500 scale-110 shadow-lg text-white border-green-500";
-                    else if (isSelected) cls = "bg-red-500/20 border-red-500/50 text-red-200";
-                  }
-                  return (
-                    <button key={idx} onClick={() => handleAnswer(idx)} disabled={quizState.answered}
-                      className={`w-full text-left p-4 rounded-xl transition-all ${cls} flex items-center justify-between`}>
-                      <span>{opt}</span>
-                      {quizState.answered && isCorrect && <CheckCircle className="w-5 h-5 text-emerald-400" />}
-                      {quizState.answered && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-400" />}
-                    </button>
-                  );
-                })}
-              </div>
-              {quizState.answered && quizState.current < quizQuestions.length - 1 && (
-                <button onClick={nextQuestion} className="mt-5 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-400 transition-colors font-medium shadow-sm w-full sm:w-auto">
-                  Next Question →
-                </button>
-              )}
-              {quizState.answered && quizState.current === quizQuestions.length - 1 && (
-                <button onClick={() => {
-                  setQuizQuestions([...allQuizQuestions].sort(() => Math.random() - 0.5));
-                  setQuizState({ current: 0, score: 0, answered: false, selected: null });
-                }} className="mt-5 px-6 py-3 bg-slate-700 text-slate-200 rounded-xl hover:bg-slate-600 transition-colors font-medium border t-border w-full sm:w-auto">
-                  Restart Quiz
-                </button>
-              )}
-            </div>
-          ) : null}
-        </div>
+        <QuizCard
+          question={currentQuestion}
+          quizState={quizState}
+          totalQuestions={totalQuestions}
+          isComplete={isComplete}
+          onAnswer={handleAnswer}
+          onNext={nextQuestion}
+          onReset={resetQuiz}
+          title="Ultimate Election Quiz"
+        />
       </div>
 
       {/* Leaderboard Section */}
-      <div className="w-full">
+      <div className="w-full" role="region" aria-label="Global Leaderboard">
         <h2 className="text-2xl font-bold t-text mb-6 text-center">Global Leaderboard</h2>
         {loading ? (
-          <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
+          <LoadingSpinner message="Loading leaderboard..." />
         ) : (
           <div className="w-full t-card border t-border rounded-3xl overflow-hidden shadow-lg">
             {leaders.map((user, index) => (
@@ -252,7 +180,7 @@ export default function QuizAndLeaderboardPage() {
                   index === 0 ? "bg-blue-900/20" : ""
                 }`}
               >
-                <div className="flex shrink w-8 text-center font-bold text-2xl t-muted group-hover:scale-110 transition-transform">
+                <div className="flex shrink w-8 text-center font-bold text-2xl t-muted group-hover:scale-110 transition-transform" aria-label={`Rank ${index + 1}`}>
                   {index === 0 ? <Medal className="w-8 h-8 text-yellow-400" /> : 
                    index === 1 ? <Medal className="w-8 h-8 t-text2" /> : 
                    index === 2 ? <Medal className="w-8 h-8 text-amber-600" /> : 
@@ -280,8 +208,8 @@ export default function QuizAndLeaderboardPage() {
                 </div>
                 
                 <div className="flex items-center gap-2 t-bg3 px-4 py-2 rounded-full border t-border shadow-sm group-hover:border-blue-500/30 transition-colors">
-                  <Award className="w-5 h-5 t-accent" />
-                  <span className="font-bold t-text">
+                  <Award className="w-5 h-5 t-accent" aria-hidden="true" />
+                  <span className="font-bold t-text" aria-label={`${user.score} points`}>
                     {user.score} pts
                   </span>
                 </div>
@@ -302,7 +230,7 @@ export default function QuizAndLeaderboardPage() {
 
 function UserIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500" aria-hidden="true">
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>

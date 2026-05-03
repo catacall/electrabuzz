@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { TreePine, Users, Vote, Layers, ChevronDown, ChevronUp, HelpCircle, CheckCircle, XCircle, ArrowDown } from "lucide-react";
+import { TreePine, Users, Vote, Layers, ChevronDown, ChevronUp, ArrowDown } from "lucide-react";
 import constituenciesData from "../data/constituencies.json";
-import { fireConfetti } from "@/app/utils/confetti";
-import { playCorrectSound, playIncorrectSound } from "@/app/utils/sound";
-import { useGlobalScore } from "@/app/hooks/useGlobalScore";
-
+import { useQuiz } from "@/app/hooks/useQuiz";
+import QuizCard from "@/app/components/ui/QuizCard";
+import type { Question } from "@/app/types";
 
 const panchayatFacts = [
   { label: "Gram Panchayats", value: "2.5 Lakh+", icon: TreePine },
@@ -21,7 +20,6 @@ const tiers = [
     level: "District Level (Top Tier)",
     head: "Zila Pramukh / Adhyaksh",
     description: "The Zila Parishad operates at the district level and oversees all Panchayat Samitis within the district. It coordinates development plans, allocates funds from state and central government schemes (like MGNREGA, PM Awas Yojana), supervises block-level bodies, and maintains district roads, hospitals, and secondary schools. Members are elected from territorial constituencies at the district level.",
-    color: "t-accent",
     bgColor: "bg-blue-500/10 border-blue-500/30",
   },
   {
@@ -29,7 +27,6 @@ const tiers = [
     level: "Block / Taluka Level (Middle Tier)",
     head: "Pramukh / Sabhapati",
     description: "The Panchayat Samiti functions at the block or taluka level, bridging the gap between village and district governance. It coordinates development programs for the block, manages primary health centers, implements agricultural programs, oversees primary education, and manages block-level infrastructure. Members include all Sarpanches of Gram Panchayats in the block plus directly elected members.",
-    color: "t-accent",
     bgColor: "bg-blue-500/10 border-blue-500/30",
   },
   {
@@ -37,7 +34,6 @@ const tiers = [
     level: "Village Level (Base Tier)",
     head: "Sarpanch / Gram Pradhan",
     description: "The Gram Panchayat is the foundation of rural self-governance, covering one or a cluster of villages. The Sarpanch is directly elected by the village voters. It maintains village roads, manages drinking water supply, sanitation, and street lighting. It collects local taxes and fees, implements government welfare schemes, resolves minor disputes through the Gram Sabha (village assembly where all registered voters can participate), and maintains birth/death records.",
-    color: "t-accent",
     bgColor: "bg-blue-500/10 border-blue-500/30",
   },
 ];
@@ -45,15 +41,15 @@ const tiers = [
 const sections = [
   {
     title: "What is the Panchayati Raj System?",
-    content: `The Panchayati Raj is India's system of rural local self-governance. It was constitutionally established by the 73rd Constitutional Amendment Act, 1992, which added Part IX to the Constitution. The word "Panchayat" comes from "Panch" (five) â€” referring to the traditional council of five elders who governed villages. Today, it is a three-tier democratic structure covering over 6 lakh villages and approximately 65% of India's population.`
+    content: `The Panchayati Raj is India's system of rural local self-governance. It was constitutionally established by the 73rd Constitutional Amendment Act, 1992, which added Part IX to the Constitution. The word "Panchayat" comes from "Panch" (five) – referring to the traditional council of five elders who governed villages. Today, it is a three-tier democratic structure covering over 6 lakh villages and approximately 65% of India's population.`
   },
   {
     title: "73rd Constitutional Amendment (1992)",
     content: `This landmark amendment made Panchayati Raj a constitutional body rather than a voluntary state provision. Key provisions include: mandatory elections every 5 years; reservation of one-third seats for women (now 50% in many states); reservation for SC/ST communities proportional to their population; establishment of State Election Commissions to conduct Panchayat elections; creation of State Finance Commissions every 5 years to review Panchayat finances; and a Gram Sabha (village assembly) for every village for direct democratic participation.`
   },
   {
-    title: "Gram Sabha â€” Direct Democracy in Action",
-    content: `The Gram Sabha is the most powerful democratic institution at the village level. It consists of ALL registered voters in the Panchayat area. It must meet at least twice a year (many states mandate four meetings). The Gram Sabha approves the village development plan and annual budget, identifies beneficiaries for government schemes, audits Panchayat accounts and performance, approves public works, and can question the Sarpanch directly. No development plan can be implemented without Gram Sabha approval â€” making it the purest form of direct democracy in India.`
+    title: "Gram Sabha – Direct Democracy in Action",
+    content: `The Gram Sabha is the most powerful democratic institution at the village level. It consists of ALL registered voters in the Panchayat area. It must meet at least twice a year (many states mandate four meetings). The Gram Sabha approves the village development plan and annual budget, identifies beneficiaries for government schemes, audits Panchayat accounts and performance, approves public works, and can question the Sarpanch directly. No development plan can be implemented without Gram Sabha approval – making it the purest form of direct democracy in India.`
   },
   {
     title: "Key Responsibilities",
@@ -61,7 +57,7 @@ const sections = [
   },
 ];
 
-const quizQuestions = [
+const quizQuestions: Question[] = [
   {
     question: "Which constitutional amendment established Panchayati Raj?",
     options: ["42nd Amendment", "73rd Amendment", "44th Amendment", "86th Amendment"],
@@ -90,49 +86,28 @@ const quizQuestions = [
 ];
 
 export default function PanchayatPage() {
-  const { addPoints } = useGlobalScore();
   const [openSection, setOpenSection] = useState<number | null>(0);
-  const [quizState, setQuizState] = useState({ current: 0, score: 0, answered: false, selected: null as number | null });
+  const quiz = useQuiz({ questions: quizQuestions });
 
   const panchayatConstituencies = constituenciesData.filter(c => c.type === "Panchayat");
-
-  const handleAnswer = (idx: number) => {
-    if (quizState.answered) return;
-    const isCorrect = idx === quizQuestions[quizState.current].correct;
-    
-    if (isCorrect) {
-      fireConfetti();
-      playCorrectSound();
-      addPoints(10);
-    } else {
-      playIncorrectSound();
-    }
-
-    setQuizState(prev => ({
-      ...prev, answered: true, selected: idx,
-      score: isCorrect ? prev.score + 1 : prev.score,
-    }));
-  };
-
-  const nextQuestion = () => setQuizState(prev => ({ ...prev, current: prev.current + 1, answered: false, selected: null }));
 
   return (
     <div className="flex flex-col gap-10 p-4 sm:p-8 max-w-5xl mx-auto pb-20">
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center gap-3 t-card px-6 py-3 rounded-full border t-border mb-4">
-          <TreePine className="w-6 h-6 t-accent" />
+          <TreePine className="w-6 h-6 t-accent" aria-hidden="true" />
           <span className="text-sm font-bold t-accent uppercase tracking-wider">Rural Self-Governance</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold t-text tracking-tight">Panchayati Raj</h1>
-        <p className="t-muted mt-3 max-w-xl mx-auto">India&apos;s three-tier system of grassroots democracy  empowering over 6 lakh villages with self-governance since 1992.</p>
+        <p className="t-muted mt-3 max-w-xl mx-auto">India&apos;s three-tier system of grassroots democracy – empowering over 6 lakh villages with self-governance since 1992.</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {panchayatFacts.map((fact) => (
           <div key={fact.label} className="t-card border t-border rounded-2xl p-5 text-center hover:t-border-hover transition-all group hover:-translate-y-1 shadow-sm">
-            <fact.icon className="w-8 h-8 t-accent mx-auto mb-3 group-hover:scale-110 transition-transform" />
+            <fact.icon className="w-8 h-8 t-accent mx-auto mb-3 group-hover:scale-110 transition-transform" aria-hidden="true" />
             <p className="text-2xl font-extrabold t-text">{fact.value}</p>
             <p className="text-sm t-muted mt-1">{fact.label}</p>
           </div>
@@ -148,7 +123,7 @@ export default function PanchayatPage() {
               <div className={`t-card border rounded-2xl p-6 shadow-sm ${tier.bgColor} hover:scale-[1.01] transition-transform`}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                   <div>
-                    <h3 className={`text-xl font-bold ${tier.color}`}>{tier.name}</h3>
+                    <h3 className="text-xl font-bold t-accent">{tier.name}</h3>
                     <p className="text-sm t-muted">{tier.level}</p>
                   </div>
                   <span className="text-sm t-bg3 border t-border px-3 py-1 rounded-full t-text2 font-bold">
@@ -159,7 +134,7 @@ export default function PanchayatPage() {
               </div>
               {idx < tiers.length - 1 && (
                 <div className="flex justify-center py-1">
-                  <ArrowDown className="w-6 h-6 text-blue-500/50" />
+                  <ArrowDown className="w-6 h-6 text-blue-500/50" aria-hidden="true" />
                 </div>
               )}
             </div>
@@ -172,8 +147,12 @@ export default function PanchayatPage() {
         <h2 className="text-2xl font-bold t-text mb-4">Deep Dive</h2>
         {sections.map((section, idx) => (
           <div key={idx} className="t-card border t-border rounded-2xl overflow-hidden shadow-sm">
-            <button onClick={() => setOpenSection(openSection === idx ? null : idx)}
-              className="w-full flex items-center justify-between p-5 text-left hover:t-card/50 transition-colors">
+            <button
+              onClick={() => setOpenSection(openSection === idx ? null : idx)}
+              className="w-full flex items-center justify-between p-5 text-left hover:t-card/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset"
+              aria-expanded={openSection === idx}
+              aria-label={section.title}
+            >
               <span className="text-lg font-semibold t-text">{section.title}</span>
               {openSection === idx ? <ChevronUp className="w-5 h-5 t-accent" /> : <ChevronDown className="w-5 h-5 t-muted" />}
             </button>
@@ -208,55 +187,15 @@ export default function PanchayatPage() {
       </div>
 
       {/* Interactive Quiz */}
-      <div className="t-card border t-border rounded-3xl p-6 sm:p-8 shadow-lg">
-        <div className="flex items-center gap-3 mb-6">
-          <HelpCircle className="w-7 h-7 t-accent" />
-          <h2 className="text-2xl font-bold t-text">Test Your Knowledge</h2>
-        </div>
-        {quizState.current < quizQuestions.length ? (
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-sm t-muted">Question {quizState.current + 1} of {quizQuestions.length}</span>
-              <span className="text-sm font-bold t-accent">Score: {quizState.score}/{quizQuestions.length}</span>
-            </div>
-            <p className="text-lg font-semibold t-text mb-5">{quizQuestions[quizState.current].question}</p>
-            <div className="grid gap-3">
-              {quizQuestions[quizState.current].options.map((opt, idx) => {
-                const isCorrect = idx === quizQuestions[quizState.current].correct;
-                const isSelected = quizState.selected === idx;
-                let cls = "t-bg3 border t-border t-text2 hover:t-card";
-                if (quizState.answered) {
-                  if (isCorrect) cls = "bg-green-500 scale-110 shadow-lg text-white border-green-500";
-                  else if (isSelected) cls = "bg-red-500/20 border-red-500/50 text-red-200";
-                }
-                return (
-                  <button key={idx} onClick={() => handleAnswer(idx)} disabled={quizState.answered}
-                    className={`w-full text-left p-4 rounded-xl transition-all ${cls} flex items-center justify-between`}>
-                    <span>{opt}</span>
-                    {quizState.answered && isCorrect && <CheckCircle className="w-5 h-5 text-emerald-400" />}
-                    {quizState.answered && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-red-400" />}
-                  </button>
-                );
-              })}
-            </div>
-            {quizState.answered && quizState.current < quizQuestions.length - 1 && (
-              <button onClick={nextQuestion} className="mt-5 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-400 transition-colors font-medium shadow-sm">
-                Next Question 
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-3xl font-extrabold t-text mb-2">Quiz Complete!</p>
-            <p className="text-xl t-accent font-bold">Your Score: {quizState.score} / {quizQuestions.length}</p>
-            <button onClick={() => setQuizState({ current: 0, score: 0, answered: false, selected: null })}
-              className="mt-6 px-6 py-3 bg-slate-700 text-slate-200 rounded-xl hover:bg-slate-600 transition-colors font-medium border t-border">
-              Retry Quiz
-            </button>
-          </div>
-        )}
-      </div>
+      <QuizCard
+        question={quiz.currentQuestion}
+        quizState={quiz.quizState}
+        totalQuestions={quiz.totalQuestions}
+        isComplete={quiz.isComplete}
+        onAnswer={quiz.handleAnswer}
+        onNext={quiz.nextQuestion}
+        onReset={quiz.resetQuiz}
+      />
     </div>
   );
 }
-
